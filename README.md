@@ -76,3 +76,4 @@ Your privacy is paramount. All of your data (notes, tasks, goals, etc.) is store
 The only data that leaves your device are the prompts and commands you issue to LΞX, which are sent to the Google Gemini API for processing to generate a response.
 # LEX-ACADEMIC-CO-PILOT
 # LEX-ACADEMIC-CO-PILOT
+# LEX-ACADEMIC-CO-PILOT
