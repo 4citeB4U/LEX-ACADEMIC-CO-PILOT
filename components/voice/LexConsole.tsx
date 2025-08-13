@@ -13,7 +13,9 @@ const councilButtons = [
     { id: 'email', icon: 'M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z M22 6l-10 7L2 6', label: 'Email Backup' },
 ];
 
-const MicIcon: React.FC<{className?: string}> = ({className}) => <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`h-8 w-8 ${className || 'text-white'}`}><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path><line x1="12" y1="19" x2="12" y2="23"></line><line x1="8" y1="23" x2="16" y2="23"></line></svg>;
+const LexIcon: React.FC<{className?: string}> = ({className}) => (
+    <img src={require('../../public/LEX.svg')} alt="LEX" className={`h-8 w-8 ${className || ''}`} />
+);
 
 const LexConsole: React.FC = () => {
     const { phase } = useVoiceControl();
@@ -72,13 +74,9 @@ const LexConsole: React.FC = () => {
                         key={btn.id}
                         onClick={() => handleCouncilClick(btn.id)}
                         title={btn.label}
-                        className="absolute w-12 h-12 bg-slate-700 hover:bg-accent-fuchsia rounded-full flex items-center justify-center transition-all duration-300 ease-out"
-                        style={{
-                            transform: `rotate(${angle}deg) translate(80px) rotate(${-angle}deg) scale(${isHovered ? 1 : 0.5})`,
-                            opacity: isHovered ? 1 : 0,
-                            pointerEvents: isHovered ? 'auto' : 'none',
-                            transitionDelay: isHovered ? `${i * 40}ms` : '0ms'
-                        }}
+                        className={`council-btn${isHovered ? ' council-btn-hovered' : ' council-btn-unhovered'}`}
+                        data-angle={angle}
+                        data-index={i}
                     >
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                             <path d={btn.icon} />
@@ -99,7 +97,7 @@ const LexConsole: React.FC = () => {
                     <div className="absolute inset-0 p-6">
                         <VoiceWave isActive={phase === 'LISTENING'} />
                     </div>
-                    {phase !== 'LISTENING' && <MicIcon className={iconColorClass} />}
+                    {phase !== 'LISTENING' && <LexIcon className={iconColorClass} />}
                 </button>
                 {/* Tap Meter */}
                 <div className="flex gap-1.5 mt-3 h-1 w-16">
