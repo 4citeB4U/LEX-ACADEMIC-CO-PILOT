@@ -1,0 +1,28 @@
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>LΞX Ops Center - Redirecting...</title>
+    <script type="text/javascript">
+      // This script redirects all 404 routes to the root of the repository,
+      // which allows the single-page application to handle routing.
+      // Based on the method described here: https://github.com/rafgraph/spa-github-pages
+      const path = sessionStorage.redirect;
+      delete sessionStorage.redirect;
+      
+      if (path && path !== location.pathname) {
+        history.replaceState(null, null, path);
+      } else {
+        // Fallback for direct access to 404.html
+        // It redirects to the root of the site.
+        const repoPath = '/' + location.pathname.split('/')[1] + '/'; // Assumes /repo-name/
+        location.replace(location.protocol + '//' + location.hostname + (location.port ? ':'+location.port : '') + repoPath);
+      }
+    </script>
+  </head>
+  <body>
+    <!-- The script above will execute and redirect. -->
+    <p>If you are not redirected automatically, follow this <a href="/">link to the Ops Center</a>.</p>
+  </body>
+</html>
