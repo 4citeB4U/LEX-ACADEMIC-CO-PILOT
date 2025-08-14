@@ -68,7 +68,6 @@ function App() {
                 <RightRail />
               </div>
               <OnboardingFlow />
-              <ConfigurationStatus />
               <Footer />
             </div>
           </Suspense>
