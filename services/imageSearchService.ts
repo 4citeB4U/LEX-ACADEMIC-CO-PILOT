@@ -35,12 +35,7 @@ class ImageSearchService {
     console.log('  - Search Engine ID:', this.searchEngineId);
     
     if (!this.apiKey || !this.searchEngineId) {
-      console.warn('⚠️ Google Search API credentials not configured:');
-      console.warn('  - VITE_GOOGLE_SEARCH_API_KEY:', this.apiKey ? 'Present' : 'Missing');
-      console.warn('  - VITE_GOOGLE_SEARCH_ENGINE_ID:', this.searchEngineId ? 'Present' : 'Missing');
-      console.warn('  - Check your .env.local file and restart the dev server');
-    } else {
-      console.log('✅ Google Search API credentials configured successfully');
+      console.info('ImageSearch: using free Google Embed + DDG Instant Answer (no JSON API).');
     }
   }
 
