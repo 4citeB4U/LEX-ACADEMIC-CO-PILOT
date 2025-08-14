@@ -113,10 +113,10 @@ const Notes: React.FC = () => {
     return found;
   }, [notes, activeNoteId]);
 
-  const createNewNote = async (type: 'text' | 'analysis' = 'text', title: string = 'Untitled Note', text: string = '', source?: 'lecture' | 'chat' | 'manual' | 'analyzer_image' | 'analyzer_doc' | 'career_blueprint', originalFileName?: string) => {
-    // Only allow valid source types
-    const validSources = ['lecture', 'chat', 'manual', 'analyzer_image', 'analyzer_doc'];
-    const metaSource = validSources.includes(source as string) ? source : undefined;
+  const createNewNote = async (type: 'text' | 'analysis' = 'text', title: string = 'Untitled Note', text: string = '', source?: 'lecture' | 'chat' | 'manual' | 'analyzer_image' | 'analyzer_doc', originalFileName?: string) => {
+  // Only allow valid source types
+  const validSources = ['lecture', 'chat', 'manual', 'analyzer_image', 'analyzer_doc'];
+  const metaSource = validSources.includes(source as string) ? source : undefined;
     const newNote: Note = {
       id: `note_${Date.now()}`,
       type,

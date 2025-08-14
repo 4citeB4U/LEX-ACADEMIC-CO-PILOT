@@ -230,5 +230,16 @@ class ImageSearchService {
   }
 }
 
+// Vite env type fix for TypeScript
+interface ImportMetaEnv {
+  VITE_GOOGLE_SEARCH_API_KEY?: string;
+  VITE_GOOGLE_SEARCH_ENGINE_ID?: string;
+  VITE_GEMINI_API_KEY?: string;
+  DUCKDUCKGO_SEARCH_API_KEY?: string;
+}
+interface ImportMeta {
+  env: ImportMetaEnv;
+}
+
 export const imageSearchService = new ImageSearchService();
 export type { ImageSearchResult, SearchResponse };
