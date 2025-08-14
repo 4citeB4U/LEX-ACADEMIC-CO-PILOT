@@ -103,6 +103,8 @@ const GoalModal: React.FC<GoalModalProps> = ({ goal, onClose }) => {
                                 onBlur={() => CUE.context.setDictationTarget(null)}
                                 className="w-full bg-slate-700 rounded-md p-2 border border-slate-600 text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
                                 required
+                                placeholder="Enter your goal title"
+                                title="Goal Title"
                             />
                         </div>
 

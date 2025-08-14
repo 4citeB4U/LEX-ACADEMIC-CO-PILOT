@@ -31,18 +31,6 @@ export class LexDatabase extends Dexie implements ILexDatabase {
 
   constructor() {
     super('lex-database');
-    this.version(7).stores({
-      notes: 'id, type, createdAt, updatedAt, archived, *links.assignments',
-      assignments: 'id, dueISO, status, createdAt, updatedAt, priority, energyLevel',
-      planSteps: 'id, domain, horizon, due, completedAt, goalId',
-      research: 'id, type, createdAt, status', // Added status index for async operations
-      dailyNotes: 'id, dateISO',
-      goals: 'id, domain, horizon, createdAt, *links.research',
-      userProfile: 'id',
-      schoolInfo: 'id',
-      appearanceSettings: 'id',
-    });
-
     this.version(6).stores({
       notes: 'id, type, createdAt, updatedAt, archived, *links.assignments',
       assignments: 'id, dueISO, status, createdAt, updatedAt, priority, energyLevel',

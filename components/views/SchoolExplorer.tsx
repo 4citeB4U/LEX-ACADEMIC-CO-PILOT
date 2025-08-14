@@ -3,7 +3,7 @@ import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 
 // This is a simplified version of the logic from geminiService, adapted for this component.
 // It's better to have it here to handle the specific response with citations.
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
+const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || process.env.GEMINI_API_KEY || '' });
 
 interface GroundingChunk {
     web: {
@@ -28,7 +28,8 @@ const SchoolExplorer: React.FC = () => {
         setSources([]);
         setError('');
 
-        if (!process.env.API_KEY) {
+        const apiKey = process.env.API_KEY || process.env.GEMINI_API_KEY;
+        if (!apiKey) {
             setError("API key is not configured. Please contact the developer.");
             setIsLoading(false);
             return;
@@ -44,7 +45,7 @@ const SchoolExplorer: React.FC = () => {
                 },
             });
             
-            setResponse(result.text);
+            setResponse(result.text || "No response received from the AI service.");
             const groundingMetadata = result.candidates?.[0]?.groundingMetadata;
             if (groundingMetadata?.groundingChunks) {
                 // Make sure we handle cases where groundingChunks might not be in the expected format
@@ -69,9 +70,8 @@ const SchoolExplorer: React.FC = () => {
                 <input
                     type="text"
                     value={query}
-                    onChange={(e) => setQuery(e.target.value)}
+                    onChange={(e) => setQuery(e.target.value || "")}
                     placeholder="e.g., 'University of California, Berkeley'"
-                    className="flex-grow bg-slate-700 border border-slate-600 rounded-lg p-4 text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
                     disabled={isLoading}
                 />
                 <button 

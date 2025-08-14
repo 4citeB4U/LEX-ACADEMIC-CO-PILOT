@@ -28,7 +28,7 @@ const GreetingPreview: React.FC<{ settings: Partial<GreetingSettings>, name: str
     
     return (
         <div className="h-full w-full bg-bg-main rounded-lg flex items-center justify-center p-4 min-h-[200px]">
-            <span style={previewStyle} className={previewClass}>{name}</span>
+            <span className={`settings-preview ${previewClass}`}>{name}</span>
         </div>
     );
 };
@@ -166,7 +166,8 @@ const Settings: React.FC = () => {
                 <Card title="Lex Flow Meter">
                     <p className="text-slate-400 mb-2">Controls my personality and use of slang.</p>
                      <div className="flex items-center gap-4">
-                        <input type="range" min="0" max="100" value={flow} onChange={(e) => setFlow(Number(e.target.value))} className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer" />
+                        <label htmlFor="flowMeter" className="sr-only">Lex Flow Meter</label>
+                        <input id="flowMeter" type="range" min="0" max="100" value={flow} onChange={(e) => setFlow(Number(e.target.value))} className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer" aria-label="Lex Flow Meter" />
                         <span className="font-semibold text-white w-24 text-right text-sm">
                             {flow >= 90 ? "Hustle" : flow >= 40 ? "Mid" : "Pro"}
                         </span>
@@ -184,32 +185,32 @@ const Settings: React.FC = () => {
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
                                     <label className="block text-sm font-medium text-slate-400 mb-1">Font Family</label>
-                                    <select name="fontFamily" value={formData.greeting.fontFamily || 'Inter'} onChange={(e) => handleGreetingChange('fontFamily', e.target.value)} className="w-full bg-slate-700 rounded-md p-2 border border-slate-600">
+                                    <select name="fontFamily" value={formData.greeting.fontFamily || 'Inter'} onChange={(e) => handleGreetingChange('fontFamily', e.target.value)} className="w-full bg-slate-700 rounded-md p-2 border border-slate-600" aria-label="Font Family" title="Font Family">
                                         <option>Inter</option><option>Poppins</option><option>JetBrains Mono</option><option>Georgia</option>
                                     </select>
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-slate-400 mb-1">Text Color</label>
-                                    <input name="textColor" type="color" value={formData.greeting.textColor || '#FFFFFF'} onChange={(e) => handleGreetingChange('textColor', e.target.value)} className="w-full bg-slate-700 rounded-md p-1 border border-slate-600"/>
+                                    <input name="textColor" type="color" value={formData.greeting.textColor || '#FFFFFF'} onChange={(e) => handleGreetingChange('textColor', e.target.value)} className="w-full bg-slate-700 rounded-md p-1 border border-slate-600" aria-label="Text Color" title="Text Color" />
                                 </div>
                             </div>
                             <div className="grid grid-cols-3 gap-4">
                                <div>
                                     <label className="block text-sm font-medium text-slate-400 mb-1">Font Size (px)</label>
-                                    <input type="number" name="fontSize" value={formData.greeting.fontSize || 32} onChange={(e) => handleGreetingChange('fontSize', e.target.value)} className="w-full bg-slate-700 rounded-md p-2 border border-slate-600" />
+                                    <input type="number" name="fontSize" value={formData.greeting.fontSize || 32} onChange={(e) => handleGreetingChange('fontSize', e.target.value)} className="w-full bg-slate-700 rounded-md p-2 border border-slate-600" aria-label="Font Size" title="Font Size" />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-slate-400 mb-1">Font Weight</label>
-                                    <input type="number" step="100" name="fontWeight" value={formData.greeting.fontWeight || 700} onChange={(e) => handleGreetingChange('fontWeight', e.target.value)} className="w-full bg-slate-700 rounded-md p-2 border border-slate-600" />
+                                    <input type="number" step="100" name="fontWeight" value={formData.greeting.fontWeight || 700} onChange={(e) => handleGreetingChange('fontWeight', e.target.value)} className="w-full bg-slate-700 rounded-md p-2 border border-slate-600" aria-label="Font Weight" title="Font Weight" />
                                 </div>
                                 <div>
                                     <label className="block text-sm font-medium text-slate-400 mb-1">Spacing (px)</label>
-                                    <input type="number" name="letterSpacing" value={formData.greeting.letterSpacing || 0} onChange={(e) => handleGreetingChange('letterSpacing', e.target.value)} className="w-full bg-slate-700 rounded-md p-2 border border-slate-600" />
+                                    <input type="number" name="letterSpacing" value={formData.greeting.letterSpacing || 0} onChange={(e) => handleGreetingChange('letterSpacing', e.target.value)} className="w-full bg-slate-700 rounded-md p-2 border border-slate-600" aria-label="Letter Spacing" title="Letter Spacing" />
                                 </div>
                             </div>
                             <div>
                                 <label className="block text-sm font-medium text-slate-400 mb-1">Text Effect</label>
-                                <select name="textEffect" value={formData.greeting.textEffect || 'none'} onChange={(e) => handleGreetingChange('textEffect', e.target.value)} className="w-full bg-slate-700 rounded-md p-2 border border-slate-600">
+                                <select name="textEffect" value={formData.greeting.textEffect || 'none'} onChange={(e) => handleGreetingChange('textEffect', e.target.value)} className="w-full bg-slate-700 rounded-md p-2 border border-slate-600" aria-label="Text Effect" title="Text Effect">
                                     <option value="none">None</option><option value="glow">Glow</option><option value="fire">Fire</option><option value="electric">Electric</option>
                                 </select>
                             </div>
@@ -221,7 +222,8 @@ const Settings: React.FC = () => {
                 <Card title="Voice Narration">
                      <p className="text-slate-400 mb-4 text-sm">Select the system voice for read-aloud features.</p>
                      <div className="flex gap-2">
-                        <select value={selectedVoice} onChange={handleVoiceChange} className="w-full bg-slate-700 rounded-md p-2 border border-slate-600 text-sm">
+                        <label htmlFor="voiceSelect" className="sr-only">Voice Selection</label>
+                        <select id="voiceSelect" value={selectedVoice} onChange={handleVoiceChange} className="w-full bg-slate-700 rounded-md p-2 border border-slate-600 text-sm" aria-label="Voice Selection">
                             <option value="">System Default</option>
                             {voices.filter(v => v.lang.startsWith('en-')).map(v => <option key={v.voiceURI} value={v.voiceURI}>{v.name} ({v.lang})</option>)}
                         </select>

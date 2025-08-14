@@ -21,11 +21,7 @@ const LexWaveEmitter: React.FC = () => {
             {bars.map((bar, index) => (
                  <div
                     key={index}
-                    className={`w-3 h-full rounded-full ${bar.color}`}
-                    style={{
-                        animation: isSpeaking ? `wave-pulse 1s ${bar.delay} infinite ease-in-out` : 'none',
-                        transform: 'scaleY(0.1)'
-                    }}
+                    className={`w-3 h-full rounded-full ${bar.color} ${isSpeaking ? 'wave-pulse' : ''}`}
                 />
             ))}
             <style>{`

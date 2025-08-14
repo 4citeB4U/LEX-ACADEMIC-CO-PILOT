@@ -1,11 +1,24 @@
 import { GoogleGenAI, Type, GenerateContentResponse } from "@google/genai";
 import { View, IntelResult, GroundingChunk, VoiceCommand, Audience, CareerBlueprint, CareerPlanItem, SuggestedGoal, CollegeRec, Domain, Horizon } from '../types';
+import { imageSearchService, ImageSearchResult } from './imageSearchService';
 
-if (!process.env.API_KEY) {
-  console.warn("API_KEY environment variable not set. Gemini API calls will fail.");
+// Use Vite's import.meta.env for environment variables
+const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.GEMINI_API_KEY;
+
+// Initialize AI only if API key is available
+let ai: GoogleGenAI | null = null;
+
+if (API_KEY) {
+    try {
+        ai = new GoogleGenAI({ apiKey: API_KEY });
+        console.log("✅ Gemini AI initialized successfully");
+    } catch (error) {
+        console.error("❌ Failed to initialize Gemini AI:", error);
+        ai = null;
+    }
+} else {
+    console.warn("⚠️ VITE_GEMINI_API_KEY not set. Gemini AI features will be disabled.");
 }
-
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY! });
 
 const getPersonalityInstruction = (flow: number): string => {
     if (flow >= 90) return "You must adopt a street-hustle, confident, and slang-heavy tone. Be direct and use modern slang naturally. You are a sharp, savvy co-pilot from the streets who knows how to get things done.";
@@ -16,22 +29,33 @@ const getPersonalityInstruction = (flow: number): string => {
 // --- REGULAR CHAT FUNCTIONS ---
 
 export const lexRespond = async (prompt: string, flow: number, audience: Audience): Promise<string> => {
-  if (!process.env.API_KEY) {
-    return "I'm sorry, the application is not configured with an API key for the AI service. Please contact the developer.";
+  if (!ai) {
+    return "I'm sorry, the AI service is not configured. Please set VITE_GEMINI_API_KEY in your environment variables.";
   }
+
   const personality = getPersonalityInstruction(flow);
+  const systemPrompt = `You are LΞX, an AI academic co-pilot. ${personality} Respond to the user's query in a helpful, engaging way. Keep responses concise but informative.`;
+
   try {
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash',
-      contents: prompt,
-      config: {
-        systemInstruction: `You are LEX, a helpful academic co-pilot for students. ${personality} Keep your answers concise, informative, and encouraging. Your audience setting is '${audience}', adjust content appropriately. Do not use asterisks for emphasis in your response.`,
-      },
+    const result = await ai.models.generateContent({
+      model: "gemini-2.0-flash-exp",
+      contents: [
+        { role: "user", parts: [{ text: systemPrompt }] },
+        { role: "user", parts: [{ text: prompt }] }
+      ],
+      generationConfig: {
+        temperature: 0.7,
+        maxOutputTokens: 1000,
+        topP: 0.8,
+        topK: 40
+      }
     });
-    return response.text;
+
+    const response = await result.response;
+    return response.text();
   } catch (error) {
-    console.error("Error calling Gemini API:", error);
-    return "I'm sorry, I encountered an error while trying to find an answer. Please check the console for details.";
+    console.error("AI response generation failed:", error);
+    return "I'm sorry, I encountered an error while processing your request. Please try again.";
   }
 };
 
@@ -50,7 +74,8 @@ const commandSchema = {
 };
 
 export const processVoiceCommand = async (prompt: string, currentView: View, flow: number, audience: Audience): Promise<VoiceCommand> => {
-    if (!process.env.API_KEY) return { action: 'talk', spokenResponse: "I'm sorry, the application is not configured with an API key." };
+    if (!ai) return { action: 'talk', spokenResponse: "I'm sorry, the AI service is not configured. Please set your API key." };
+    
     const personality = getPersonalityInstruction(flow);
     try {
         const systemInstruction = `You are the brain of a voice assistant named LEX, integrated into an academic operations app. ${personality} Your current view is '${currentView}'. Your audience setting is '${audience}', adjust your spoken response content appropriately. Your job is to understand a user's request and return a JSON object that determines the application's response according to the provided schema. Do not use asterisks or any markdown for emphasis in your spokenResponse.
@@ -84,88 +109,218 @@ export const processVoiceCommand = async (prompt: string, currentView: View, flo
 // --- INTEL & BLUEPRINT SUITE ---
 
 export const getIntel = async (query: string): Promise<IntelResult> => {
-    if (!process.env.API_KEY) throw new Error("API key not configured.");
-    
-    const prompt = `Provide a comprehensive overview of "${query}". Your response should be well-structured for a student. In your text, also try to include markdown links for relevant images and direct links to academic papers or PDFs on the topic.`;
-    
-    const result: GenerateContentResponse = await ai.models.generateContent({
-        model: "gemini-2.5-flash",
-        contents: prompt,
-        config: {
-            tools: [{ googleSearch: {} }],
-            systemInstruction: "You are an expert research assistant. You provide detailed, accurate information backed by web sources. You also find relevant images and documents (PDFs) to create a rich, multi-format dossier for the user."
-        },
-    });
-    
-    const text = result.text;
-    const groundingMetadata = result.candidates?.[0]?.groundingMetadata;
-    const sources = (groundingMetadata?.groundingChunks as GroundingChunk[] || []).filter(c => c.web?.uri);
+    if (!ai) {
+        // Return fallback research data when AI is not available
+        const fallbackImages = await imageSearchService.generateFallbackImages(query);
+        return {
+            query,
+            analysis: `Research on "${query}" is currently unavailable because the AI service is not configured. Please set VITE_GEMINI_API_KEY in your environment variables to enable AI-powered research.
 
-    const imageRegex = /!\[.*?\]\((https?:\/\/[^\s)]+\.(?:png|jpg|jpeg|gif|svg|webp)[^\s)]*)\)|(https?:\/\/[^\s)]+\.(?:png|jpg|jpeg|gif|svg|webp)[^\s)]*)/gi;
-    const pdfRegex = /https?:\/\/[^\s)]+\.pdf/gi;
+To get started:
+1. Create a .env.local file in your project root
+2. Add: VITE_GEMINI_API_KEY=your_actual_api_key_here
+3. Restart your development server
 
-    const images = [...text.matchAll(imageRegex)].map(match => match[1] || match[2]).filter(Boolean);
-    const pdfs = [...new Set(text.match(pdfRegex) || [])];
+In the meantime, you can still use the image search features.`,
+            images: fallbackImages,
+            timestamp: new Date().toISOString(),
+            sources: fallbackImages.map(img => ({
+                title: img.title,
+                url: img.link,
+                type: 'image'
+            }))
+        };
+    }
+    
+    try {
+        // Get both AI analysis and image search results
+        const [aiAnalysis, imageResults] = await Promise.all([
+            // AI analysis
+            ai.models.generateContent({
+                model: "gemini-2.0-flash-exp",
+                contents: [{ role: "user", parts: [{ text: `Provide a comprehensive overview of "${query}". Your response should be well-structured for a student. Include key concepts, definitions, and practical examples. Format the response in markdown with clear headings and bullet points.` }] }],
+                generationConfig: {
+                    temperature: 0.7,
+                    maxOutputTokens: 1500,
+                    topP: 0.8,
+                    topK: 40
+                }
+            }),
+            // Image search
+            imageSearchService.searchImages(query, 6)
+        ]);
 
-    return { text, sources, images, pdfs };
+        const aiResponse = await aiAnalysis.response;
+        const analysis = aiResponse.text();
+
+        return {
+            query,
+            analysis,
+            images: imageResults,
+            timestamp: new Date().toISOString(),
+            sources: imageResults.map(img => ({
+                title: img.title,
+                url: img.link,
+                type: 'image'
+            }))
+        };
+    } catch (error) {
+        console.error("Intel research failed:", error);
+        throw new Error("Failed to get research results. Please try again.");
+    }
 };
 
 export const generateCareerBlueprint = async (careerTitle: string, description: string): Promise<CareerBlueprint> => {
-    if (!process.env.API_KEY) throw new Error("API key not configured.");
+    if (!ai) {
+        // Return fallback career blueprint when AI is not available
+        const fallbackImages = await imageSearchService.generateFallbackImages(`${careerTitle} career path`);
+        return {
+            key_responsibilities: ["AI service not configured - please set VITE_GEMINI_API_KEY"],
+            education_pathway: [{
+                title: "Configuration Required",
+                category: "setup",
+                description: "Please set VITE_GEMINI_API_KEY in your environment variables to enable AI-powered career analysis."
+            }],
+            skills_development: ["API Configuration", "Environment Setup"],
+            timeline: "Immediate setup required",
+            salary_range: "N/A - Service not configured",
+            growth_potential: "Enable AI service for detailed analysis",
+            images: fallbackImages,
+            visualAids: {
+                careerPath: fallbackImages,
+                education: fallbackImages
+            }
+        };
+    }
     
-    const prompt = `Analyze the career path for a "${careerTitle}". The user's goal is: "${description}".
-Provide a detailed breakdown. Your response must be a single, valid JSON object and nothing else. Do not wrap it in markdown like \`\`\`json. The JSON object must have the following structure:
+    try {
+        // Get both AI analysis and career-related images
+        const [aiAnalysis, imageResults] = await Promise.all([
+            // AI career analysis
+            ai.models.generateContent({
+                model: "gemini-2.0-flash-exp",
+                contents: [{ role: "user", parts: [{ text: `Analyze the career path for a "${careerTitle}". The user's goal is: "${description}".
+
+Generate a comprehensive career blueprint in valid JSON format. The response must be complete and properly formatted JSON.
+
+Structure:
 {
-  "key_responsibilities": ["A list of typical day-to-day responsibilities."],
-  "education_pathway": [{"title": "Course/Degree Name", "category": "education", "description": "Why this is important."}],
-  "extracurricular_activities": [{"title": "Club/Activity Name", "category": "extracurricular", "description": "Relevance to the career."}],
-  "community_service": [{"title": "Volunteer Opportunity", "category": "community_service", "description": "How it helps build profile."}],
-  "required_skills": {
-    "hard": ["List of essential technical skills"],
-    "soft": ["List of essential interpersonal skills"]
-  },
-  "college_recommendations": [{"name": "University Name", "url": "https://university.edu", "reasoning": "Why this university is recommended."}],
-  "suggested_goals": [{"title": "Actionable Goal Title", "domain": "academic" | "personal" | "activities" | "career", "horizon": "short" | "mid" | "long", "description": "Brief description of the goal."}]
-}`;
+  "key_responsibilities": ["responsibility1", "responsibility2"],
+  "education_pathway": [
+    {
+      "title": "Education step title",
+      "category": "education",
+      "description": "Description without citations or brackets"
+    }
+  ],
+  "skills_development": ["skill1", "skill2"],
+  "timeline": "Estimated timeline",
+  "salary_range": "Typical salary range",
+  "growth_potential": "Career growth description"
+}
 
-    const systemInstruction = `You are an expert career and academic advisor. Your task is to generate a comprehensive, structured blueprint for a career. Use Google Search for up-to-date information. Your entire response MUST be a single JSON object that can be parsed directly. Do not add any commentary or introductory text.`;
+IMPORTANT: 
+- Return ONLY valid JSON, no markdown formatting
+- Ensure all JSON is complete and properly closed
+- Remove any citations or brackets from descriptions
+- Keep descriptions concise but informative` }] }],
+                generationConfig: {
+                    temperature: 0.7,
+                    maxOutputTokens: 2000,
+                    topP: 0.8,
+                    topK: 40
+                }
+            }),
+            // Career-related images
+            imageSearchService.searchImages(`${careerTitle} career path`, 4)
+        ]);
 
-    const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: prompt,
-        config: { 
-            systemInstruction, 
-            tools: [{ googleSearch: {} }],
-            maxOutputTokens: 8192,
-            thinkingConfig: {
-                thinkingBudget: 2048,
+        const aiResponse = await aiAnalysis.response;
+        const text = aiResponse.text();
+        
+        // Clean the response text to extract valid JSON
+        let jsonText = text.trim();
+        
+        // Remove markdown code blocks if present
+        if (jsonText.startsWith('```json')) {
+            jsonText = jsonText.replace(/```json\n?/, '').replace(/```\n?$/, '');
+        } else if (jsonText.startsWith('```')) {
+            jsonText = jsonText.replace(/```\n?/, '').replace(/```\n?$/, '');
+        }
+        
+        // Try to find complete JSON by looking for balanced braces
+        let braceCount = 0;
+        let endIndex = -1;
+        
+        for (let i = 0; i < jsonText.length; i++) {
+            if (jsonText[i] === '{') braceCount++;
+            if (jsonText[i] === '}') {
+                braceCount--;
+                if (braceCount === 0) {
+                    endIndex = i;
+                    break;
+                }
             }
         }
-    });
-    
-    // The model should return raw JSON, but let's be safe and handle potential markdown wrapping.
-    let jsonString = response.text.trim();
-    if (jsonString.startsWith('```json') && jsonString.endsWith('```')) {
-        jsonString = jsonString.substring(7, jsonString.length - 3).trim();
-    } else if (jsonString.startsWith('```') && jsonString.endsWith('```')) {
-         jsonString = jsonString.substring(3, jsonString.length - 3).trim();
-    }
-
-    try {
-        return JSON.parse(jsonString) as CareerBlueprint;
-    } catch (e) {
-        console.error("Failed to parse career blueprint JSON:", e);
-        console.error("Received text from Gemini:", response.text);
-        throw new Error("The AI returned an invalid data format for the career blueprint. Please check the console for details.");
+        
+        if (endIndex !== -1) {
+            jsonText = jsonText.substring(0, endIndex + 1);
+        }
+        
+        // Parse the cleaned JSON
+        const blueprint = JSON.parse(jsonText);
+        
+        // Validate the structure
+        if (!blueprint.key_responsibilities || !blueprint.education_pathway) {
+            throw new Error("Invalid blueprint structure received from AI");
+        }
+        
+        // Add images to the blueprint
+        blueprint.images = imageResults;
+        blueprint.visualAids = {
+            careerPath: imageResults.filter(img => 
+                img.title.toLowerCase().includes('career') || 
+                img.title.toLowerCase().includes('path') ||
+                img.title.toLowerCase().includes('timeline')
+            ),
+            education: imageResults.filter(img => 
+                img.title.toLowerCase().includes('education') || 
+                img.title.toLowerCase().includes('degree') ||
+                img.title.toLowerCase().includes('university')
+            )
+        };
+        
+        return blueprint;
+    } catch (error) {
+        console.error("Career blueprint generation failed:", error);
+        console.error("Raw response:", text);
+        
+        // Return a fallback blueprint
+        return {
+            key_responsibilities: ["Analysis failed - please try again"],
+            education_pathway: [{
+                title: "Error in Analysis",
+                category: "error",
+                description: "The AI analysis encountered an error. Please try again or rephrase your request."
+            }],
+            skills_development: ["Please retry"],
+            timeline: "Unknown",
+            salary_range: "Unknown",
+            growth_potential: "Please retry the analysis",
+            images: [],
+            visualAids: {
+                careerPath: [],
+                education: []
+            }
+        };
     }
 };
-
 
 // --- ANALYZER (DOCUMENT/IMAGE ANALYSIS) ---
 
 export const analyzeFile = async (prompt: string, base64Data: string, mimeType: string): Promise<string> => {
-    if (!process.env.API_KEY) {
-        return "I'm sorry, the application is not configured with an API key for the AI service.";
+    if (!ai) {
+        return "I'm sorry, the AI service is not configured. Please set VITE_GEMINI_API_KEY in your environment variables to enable file analysis.";
     }
     
     try {

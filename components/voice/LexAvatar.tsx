@@ -6,8 +6,8 @@ const StaticAvatar: React.FC = () => (
     <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
         <defs>
             <radialGradient id="avatarGlowStatic" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
-                <stop offset="0%" style={{ stopColor: 'rgba(59, 130, 246, 0.4)', stopOpacity: 1 }} />
-                <stop offset="100%" style={{ stopColor: 'rgba(59, 130, 246, 0)', stopOpacity: 1 }} />
+                <stop offset="0%" className="avatar-glow-static-start" />
+                <stop offset="100%" className="avatar-glow-static-end" />
             </radialGradient>
         </defs>
         <circle cx="50" cy="50" r="48" fill="url(#avatarGlowStatic)" />
@@ -24,10 +24,10 @@ const AnimatedAvatar: React.FC = () => (
     <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" className="w-full h-full">
         <defs>
             <radialGradient id="avatarGlowAnimated" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
-                <stop offset="0%" style={{ stopColor: 'rgba(217, 70, 239, 0.6)' }}>
+                <stop offset="0%" className="avatar-glow-animated-start">
                      <animate attributeName="stop-color" values="rgba(217, 70, 239, 0.6);rgba(59, 130, 246, 0.6);rgba(217, 70, 239, 0.6)" dur="2s" repeatCount="indefinite" />
                 </stop>
-                <stop offset="100%" style={{ stopColor: 'rgba(217, 70, 239, 0)', stopOpacity: 1 }} />
+                <stop offset="100%" className="avatar-glow-animated-end" />
             </radialGradient>
              <filter id="glitch" x="-20%" y="-20%" width="140%" height="140%">
                 <feTurbulence type="fractalNoise" baseFrequency="1.5" numOctaves="1" result="warp" />
@@ -43,7 +43,7 @@ const AnimatedAvatar: React.FC = () => (
         <circle cx="50" cy="50" r="40" fill="#0f172a" stroke="#3b82f6" strokeWidth="1" />
         
         {/* Glitching Text */}
-        <g style={{ filter: "url(#glitch)", opacity: 0.1 }}>
+    <g className="avatar-glitch">
              <animate attributeName="opacity" values="0.1;0.3;0.1;0.4;0.1" dur="1.5s" repeatCount="indefinite" />
             <text x="50%" y="56%" dominantBaseline="middle" textAnchor="middle" fontFamily="Inter, sans-serif" fontSize="28" fill="#d946ef" fontWeight="800">
                 LΞX

@@ -1,6 +1,26 @@
 
 
 import React, { useState, useEffect, useMemo } from 'react';
+
+// Simple error boundary for debugging
+class ErrorBoundary extends React.Component<{children: React.ReactNode}, {hasError: boolean, error: any}> {
+  constructor(props: any) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error: any) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error: any, info: any) {
+    console.error('ErrorBoundary caught:', error, info);
+  }
+  render() {
+    if (this.state.hasError) {
+      return <div className="error-boundary"><h2>Something went wrong.</h2><pre>{String(this.state.error)}</pre></div>;
+    }
+    return this.props.children;
+  }
+}
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '../../services/db';
 import { getIntel } from '../../services/geminiService';
@@ -8,14 +28,32 @@ import CUE from '../../services/cueRuntime';
 import type { Note, ChatMessage, Assignment, Research, IntelResult } from '../../types';
 
 // Helper icons
-const PlusIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12"x2="19" y2="12"></line></svg>;
+const PlusIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>;
 const TrashIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>;
 const ArchiveIcon = () => <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="10" y1="12" x2="14" y2="12"></line></svg>;
 const MicIcon = () => <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mr-2 inline-block" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"></path><path d="M19 10v2a7 7 0 0 1-14 0v-2"></path></svg>;
 const ActionIcon: React.FC<{children: React.ReactNode}> = ({children}) => <div className="w-4 h-4 mr-2">{children}</div>;
-const CreateAssignmentIcon = () => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 11 12 14 22 4"></polyline><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path></svg>;
-const SendToIntelIcon = () => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>;
-const LinkToMagnaCartaIcon = () => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /><path d="M12 18v-6" /><path d="M9 18v-6" /><path d="M15 18v-6" /></svg>;
+const CreateAssignmentIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <polyline points="9 11 12 14 22 4" />
+    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+  </svg>
+);
+const SendToIntelIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="8" />
+    <line x1="21" y1="21" x2="16.65" y2="16.65" />
+  </svg>
+);
+const LinkToMagnaCartaIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+    <polyline points="14 2 14 8 20 8" />
+    <path d="M12 18v-6" />
+    <path d="M9 18v-6" />
+    <path d="M15 18v-6" />
+  </svg>
+);
 
 const ChatBubble: React.FC<{ message: ChatMessage }> = ({ message }) => {
     const isUser = message.role === 'user';
@@ -53,6 +91,7 @@ const Notes: React.FC = () => {
       .then(sortedNotes => sortedNotes.reverse()), 
     []
   );
+  console.log('Notes:', notes);
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -69,10 +108,12 @@ const Notes: React.FC = () => {
 
   const activeNote = useMemo(() => {
     if (!activeNoteId || !notes) return undefined;
-    return notes.find(note => note.id === activeNoteId);
+    const found = notes.find(note => note.id === activeNoteId);
+    console.log('ActiveNote:', found);
+    return found;
   }, [notes, activeNoteId]);
 
-  const createNewNote = async (type: 'text' | 'analysis' = 'text', title: string = 'Untitled Note', text: string = '', source?: Note['meta']['source'], originalFileName?: string) => {
+  const createNewNote = async (type: 'text' | 'analysis' = 'text', title: string = 'Untitled Note', text: string = '', source?: 'lecture' | 'chat' | 'manual' | 'analyzer_image' | 'analyzer_doc' | 'career_blueprint', originalFileName?: string) => {
     const newNote: Note = {
       id: `note_${Date.now()}`,
       type,
@@ -82,7 +123,7 @@ const Notes: React.FC = () => {
       updatedAt: new Date().toISOString(),
       links: {},
       archived: false,
-      meta: { source, originalFileName }
+      meta: { ...(typeof source !== 'undefined' ? { source } : {}), ...(typeof originalFileName !== 'undefined' ? { originalFileName } : {}) }
     };
     const newId = await db.notes.add(newNote);
     setActiveNoteId(newId.toString());
@@ -161,6 +202,7 @@ const Notes: React.FC = () => {
   };
 
   return (
+    <ErrorBoundary>
     <div className="h-full flex bg-bg-main">
       <aside className="w-1/3 max-w-xs h-full bg-gray-900 border-r border-border-color flex flex-col shrink-0">
         <div className="p-4 border-b border-border-color flex justify-between items-center">
@@ -248,6 +290,7 @@ const Notes: React.FC = () => {
         )}
       </main>
     </div>
+    </ErrorBoundary>
   );
 };
 

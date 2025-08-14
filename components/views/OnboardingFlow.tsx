@@ -121,30 +121,30 @@ const OnboardingFlow: React.FC = () => {
                 return <LexCard onEnter={() => handleTransition('name')} />;
             case 'name':
                 return (
-                    <form onSubmit={handleNameSubmit} className="max-w-2xl text-center">
+                    <form onSubmit={handleNameSubmit} className="max-w-2xl w-full mx-auto flex flex-col items-center justify-center text-center p-4">
                         <h1 className="text-5xl font-extrabold text-white mb-4">First things first...</h1>
                         <p className="text-xl text-slate-300 mb-8">What should I call you?</p>
                         <input
                             type="text"
                             value={name}
                             onChange={(e) => setName(e.target.value)}
-                            className="w-full bg-slate-700 border border-border-color rounded-lg p-4 text-white placeholder-slate-400 text-2xl text-center mb-8 focus:outline-none focus:ring-2 focus:ring-primary-blue"
+                            className="w-full max-w-md bg-slate-700 border border-border-color rounded-lg p-4 text-white placeholder-slate-400 text-2xl text-center mb-8 focus:outline-none focus:ring-2 focus:ring-primary-blue mx-auto"
                             placeholder="Your Name"
                             autoFocus
                         />
-                        <button type="submit" className="bg-primary-blue text-white rounded-lg px-8 py-4 font-semibold text-lg hover:opacity-90 transition-opacity disabled:opacity-50" disabled={!name.trim()}>Continue</button>
+                        <button type="submit" className="bg-primary-blue text-white rounded-lg px-8 py-4 font-semibold text-lg hover:opacity-90 transition-opacity disabled:opacity-50 mx-auto" disabled={!name.trim()}>Continue</button>
                     </form>
                 );
             case 'permissions':
                  return (
-                    <div className="max-w-2xl text-center">
+                    <div className="max-w-2xl w-full mx-auto flex flex-col items-center justify-center text-center p-4">
                         <h1 className="text-5xl font-extrabold text-white mb-4">Mic Check, 1, 2...</h1>
                         <p className="text-xl text-slate-300 mb-12">
                             To use voice commands and dictation, I'll need access to your microphone.
                         </p>
                         <button
                             onClick={handleRequestPermission}
-                            className="bg-primary-blue text-white rounded-lg px-8 py-4 font-semibold text-lg hover:opacity-90 transition-opacity disabled:bg-slate-600 disabled:cursor-not-allowed"
+                            className="bg-primary-blue text-white rounded-lg px-8 py-4 font-semibold text-lg hover:opacity-90 transition-opacity disabled:bg-slate-600 disabled:cursor-not-allowed mx-auto"
                             disabled={micStatus !== 'unknown'}
                         >
                             {micStatus === 'unknown' ? 'Allow Microphone' : 'Locking In...'}
@@ -154,9 +154,9 @@ const OnboardingFlow: React.FC = () => {
                 );
             case 'guide':
                  return (
-                     <div className="max-w-3xl text-left bg-slate-800 p-8 rounded-2xl shadow-2xl">
+                     <div className="max-w-3xl w-full mx-auto flex flex-col items-center justify-center text-center bg-slate-800 p-8 rounded-2xl shadow-2xl">
                         <h1 className="text-4xl font-extrabold text-white mb-6">{guideTitle}</h1>
-                        <div className="text-lg text-slate-300 space-y-4 whitespace-pre-line max-h-[60vh] overflow-y-auto pr-4">
+                        <div className="text-lg text-slate-300 space-y-4 whitespace-pre-line max-h-[60vh] overflow-y-auto pr-4 w-full text-center">
                             {`Alright, ${name}.\n\n${guideContent}`}
                         </div>
                         <p className="text-teal-400 mt-8 animate-pulse">LEX is reading The Playbook...</p>
@@ -171,14 +171,11 @@ const OnboardingFlow: React.FC = () => {
 
     return (
         <>
-            <div className={`fixed inset-0 z-50 flex justify-center items-center transition-opacity duration-500
-                ${isOverlayVisible && !isFadingOut ? 'bg-bg-main/80 backdrop-blur-md opacity-100' : 'opacity-0 pointer-events-none'}
-                `}>
-                <div className={`p-8 transition-all duration-500 ${isFadingOut ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
+            <div className={`fixed inset-0 z-50 flex justify-center items-center transition-opacity duration-500 ${isOverlayVisible && !isFadingOut ? 'bg-bg-main/80 backdrop-blur-md opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                <div className={`w-full max-w-3xl mx-auto p-4 flex flex-col items-center justify-center transition-all duration-500 ${isFadingOut ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}>
                     {renderContent()}
                 </div>
             </div>
-            
             {step !== 'entry' && step !== 'finishing' && step !== 'skipped' && (
                 <button 
                     onClick={handleSkip}
@@ -187,7 +184,6 @@ const OnboardingFlow: React.FC = () => {
                     Skip to the Ops Center
                 </button>
             )}
-
             <div className={isOverlayVisible ? 'invisible' : ''}>
                  <div className="h-screen w-screen flex flex-col font-sans antialiased">
                     <div className="flex flex-grow overflow-hidden">

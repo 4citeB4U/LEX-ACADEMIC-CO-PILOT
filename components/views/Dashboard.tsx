@@ -26,22 +26,16 @@ const DashboardHero: React.FC = () => {
         }
     }, [userProfile, flow]);
     
-    const heroStyle: React.CSSProperties = {
-        fontFamily: greetingSettings?.fontFamily || 'inherit',
-        fontSize: greetingSettings?.fontSize ? `${greetingSettings.fontSize}px` : undefined,
-        fontWeight: greetingSettings?.fontWeight || undefined,
-        letterSpacing: greetingSettings?.letterSpacing ? `${greetingSettings.letterSpacing}px` : undefined,
-        color: greetingSettings?.textColor || undefined,
-    };
+  // CSS class replaces inline style
     
     const heroClass = greetingSettings?.textEffect ? `text-effect-${greetingSettings.textEffect}` : '';
 
-    return (
-        <div className="mb-8">
-            <h1 style={heroStyle} className={`text-4xl font-extrabold text-white mb-2 ${heroClass}`}>{welcomeMessage}</h1>
-            <p className="text-lg text-slate-400">Here's your overview for today, {userProfile?.name || 'friend'}.</p>
-        </div>
-    );
+  return (
+    <div className="mb-8">
+      <h1 className={`text-4xl font-extrabold text-white mb-2 dashboard-hero ${heroClass}`}>{welcomeMessage}</h1>
+      <p className="text-lg text-slate-400">Here's your overview for today, {userProfile?.name || 'friend'}.</p>
+    </div>
+  );
 }
 
 const TodayStrip: React.FC<{ assignments?: Assignment[] }> = ({ assignments }) => (

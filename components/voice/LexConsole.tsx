@@ -14,7 +14,7 @@ const councilButtons = [
 ];
 
 const LexIcon: React.FC<{className?: string}> = ({className}) => (
-    <img src={require('../../public/LEX.svg')} alt="LEX" className={`h-8 w-8 ${className || ''}`} />
+    <img src={`${import.meta.env.BASE_URL}LEX.svg`} alt="LEX" className={`h-8 w-8 ${className || ''}`} />
 );
 
 const LexConsole: React.FC = () => {
