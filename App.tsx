@@ -10,7 +10,6 @@ import MobileHeader from './components/layout/MobileHeader';
 import Footer from './components/layout/Footer';
 import DesktopHeader from './components/layout/DesktopHeader';
 import ErrorBoundary from './components/ErrorBoundary';
-import ConfigurationStatus from './components/ConfigurationStatus';
 import { Loader2 } from 'lucide-react';
 import { primeLexIntelImages } from './src/lib/lexintelImages'; // Corrected import path
 

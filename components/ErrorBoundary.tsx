@@ -81,14 +81,6 @@ class ErrorBoundary extends Component<Props, State> {
                 Go to Home
               </button>
             </div>
-
-            <div className="mt-6 p-3 bg-yellow-900/20 border border-yellow-700 rounded text-sm text-yellow-300">
-              <p className="font-medium mb-2">Configuration Required</p>
-              <p className="text-xs">
-                Make sure you have set up your environment variables in a <code>.env.local</code> file. 
-                See <code>env.local.example</code> for details.
-              </p>
-            </div>
           </div>
         </div>
       );
